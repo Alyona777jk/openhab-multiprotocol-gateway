@@ -1,0 +1,27 @@
+sitemap gateway label="Multi-Protocol IoT Gateway (MQTT + Zigbee)" {
+    Frame label="Gateway Master Control" {
+        Switch item=Gateway_AutoMode label="Cross-Protocol Rules"
+        Switch item=ZB_PermitJoin label="Zigbee Pairing (60s)"
+        Text   item=ZB_MeshMap label="Mesh Topology"
+    }
+
+    Frame label="MQTT Protocol Devices" {
+        Text   item=MQTT_RoomTemp
+        Text   item=MQTT_RoomHum
+        Text   item=MQTT_SensorAlive
+        Text   item=MQTT_HallMotion
+        Switch item=MQTT_PlugPower
+        Text   item=MQTT_PlugWatts
+    }
+
+    Frame label="Zigbee Protocol Devices" {
+        Switch item=ZB_BulbSwitch
+        Slider item=ZB_BulbDimmer
+        Text   item=ZB_BulbLQI
+        Text   item=ZB_DoorContact
+        Text   item=ZB_DoorBattery
+        Text   item=ZB_DoorLQI
+        Setpoint item=ZB_TRVSetpoint minValue=15 maxValue=28 step=0.5
+        Selection item=ZB_TRVMode mappings=["off"="OFF", "heat"="HEAT", "auto"="AUTO"]
+    }
+}

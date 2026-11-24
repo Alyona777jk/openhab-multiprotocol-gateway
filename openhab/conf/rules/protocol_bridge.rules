@@ -1,0 +1,55 @@
+// Сценарій 1: Клімат-контроль (MQTT Temp Sensor -> Zigbee TRV + MQTT Plug)
+rule "Cross-Protocol Climate Control"
+when
+    Item MQTT_RoomTemp changed
+then
+    if (Gateway_AutoMode.state != ON) return;
+    if (MQTT_RoomTemp.state == NULL || MQTT_RoomTemp.state == UNDEF) return;
+
+    val temp = (MQTT_RoomTemp.state as QuantityType<Number>).doubleValue
+    logInfo("ProtocolBridge", "MQTT Temperature updated: {} °C", temp)
+
+    if (temp < 19.0) {
+        // Вмикаємо обігрівач по MQTT та відкриваємо Zigbee термоголовку
+        if (MQTT_PlugPower.state != ON) MQTT_PlugPower.sendCommand(ON)
+        if (ZB_TRVMode.state != "heat") {
+            ZB_TRVMode.sendCommand("heat")
+            ZB_TRVSetpoint.sendCommand(23.0)
+        }
+        logInfo("ProtocolBridge", "Triggered Heating: MQTT Plug ON + Zigbee TRV set to 23°C")
+    } else if (temp >= 22.5) {
+        if (MQTT_PlugPower.state != OFF) MQTT_PlugPower.sendCommand(OFF)
+        if (ZB_TRVMode.state != "off") ZB_TRVMode.sendCommand("off")
+        logInfo("ProtocolBridge", "Target temp reached: Heating turned OFF across protocols")
+    }
+end
+
+// Сценарій 2: Безпека та освітлення (Zigbee Door / MQTT Motion -> Zigbee Bulb)
+rule "Security Entry Lighting Bridge"
+when
+    Item ZB_DoorContact changed to OPEN or
+    Item MQTT_HallMotion changed to ON
+then
+    if (Gateway_AutoMode.state != ON) return;
+
+    logInfo("ProtocolBridge", "Entry event detected! Activating Zigbee lighting.")
+    if (ZB_BulbSwitch.state != ON) {
+        ZB_BulbSwitch.sendCommand(ON)
+        ZB_BulbDimmer.sendCommand(85)
+    }
+end
+
+// Сценарій 3: Моніторинг стану пристроїв та Error Handling
+rule "Device Health & Reconnection Watchdog"
+when
+    Item MQTT_SensorAlive changed to "OFFLINE" or
+    Item ZB_DoorLQI changed
+then
+    if (MQTT_SensorAlive.state == "OFFLINE") {
+        logWarn("GatewayWatchdog", "ALERT: MQTT Climate Sensor went OFFLINE! Suspending auto-heating.")
+        MQTT_PlugPower.sendCommand(OFF)
+    }
+    if (ZB_DoorLQI.state != NULL && (ZB_DoorLQI.state as Number) < 20) {
+        logWarn("GatewayWatchdog", "WARNING: Weak Zigbee Mesh LQI ({}) on Door Sensor. Check router nodes.", ZB_DoorLQI.state)
+    }
+end

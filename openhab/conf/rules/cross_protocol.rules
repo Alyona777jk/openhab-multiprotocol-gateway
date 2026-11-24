@@ -1,0 +1,26 @@
+rule "Cross-Protocol Automation: MQTT High Humidity triggers Zigbee Switch"
+when
+    Item MQTT_Humidity changed
+then
+    val float hum = (MQTT_Humidity.state as Number).floatValue
+    logInfo("CrossProtocolRule", "MQTT Humidity changed: " + hum)
+
+    if (hum > 60.0) {
+        if (Zigbee_SmartSwitch.state != ON) {
+            logInfo("CrossProtocolRule", "Humidity higher than 60%. Turning ON Zigbee Switch.")
+            Zigbee_SmartSwitch.sendCommand(ON)
+        }
+    } else {
+        if (Zigbee_SmartSwitch.state != OFF) {
+            logInfo("CrossProtocolRule", "Humidity lower than 60%. Turning OFF Zigbee Switch.")
+            Zigbee_SmartSwitch.sendCommand(OFF)
+        }
+    }
+end
+
+rule "Zigbee Door Alert to MQTT Logging"
+when
+    Item Zigbee_DoorContact changed to "OPEN"
+then
+    logWarn("CrossProtocolRule", "ALERT: Zigbee Door Sensor detected OPEN state!")
+end

@@ -1,0 +1,9 @@
+Number MQTT_Temperature "MQTT Temp [%.1f °C]" <temperature> { channel="mqtt:topic:mosquitto:mqtt_temp_sensor:temperature" }
+Number MQTT_Humidity "MQTT Humidity [%.1f %%]" <humidity> { channel="mqtt:topic:mosquitto:mqtt_hum_sensor:humidity" }
+Number MQTT_Power "MQTT Power [%.2f W]" <energy> { channel="mqtt:topic:mosquitto:mqtt_power_meter:power" }
+
+Number Zigbee_Temperature "Zigbee Temp [%.1f °C]" <temperature> { channel="mqtt:topic:mosquitto:zb_temp_sensor:temperature" }
+String Zigbee_DoorContact "Zigbee Door [%s]" <door> { channel="mqtt:topic:mosquitto:zb_door_sensor:contact" }
+Switch Zigbee_SmartSwitch "Zigbee Switch Control" <switch> { channel="mqtt:topic:mosquitto:zb_smart_switch:state" }
+
+Switch AutoVentilation_Rule "Cross-Protocol Automation" <settings>

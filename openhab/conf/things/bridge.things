@@ -1,0 +1,32 @@
+Bridge mqtt:broker:mosquitto "Mosquitto MQTT Broker" [ host="mosquitto", port=1883, secure=false ] {
+
+    Thing topic mqtt_temp_sensor "MQTT Temperature Sensor" {
+        Channels:
+            Type number : temperature "Temperature" [ stateTopic="tele/mqtt_temp_sensor/state", transformationPattern="JSONPATH:$.temperature" ]
+    }
+
+    Thing topic mqtt_hum_sensor "MQTT Humidity Sensor" {
+        Channels:
+            Type number : humidity "Humidity" [ stateTopic="tele/mqtt_hum_sensor/state", transformationPattern="JSONPATH:$.humidity" ]
+    }
+
+    Thing topic mqtt_power_meter "MQTT Power Meter" {
+        Channels:
+            Type number : power "Power Consumption" [ stateTopic="tele/mqtt_power_meter/state", transformationPattern="JSONPATH:$.power" ]
+    }
+
+    Thing topic zb_temp_sensor "Zigbee Climate Sensor" {
+        Channels:
+            Type number : temperature "Zigbee Temperature" [ stateTopic="zigbee2mqtt/zb_temp_sensor", transformationPattern="JSONPATH:$.temperature" ]
+    }
+
+    Thing topic zb_door_sensor "Zigbee Door Contact" {
+        Channels:
+            Type string : contact "Door State" [ stateTopic="zigbee2mqtt/zb_door_sensor", transformationPattern="JSONPATH:$.contact" ]
+    }
+
+    Thing topic zb_smart_switch "Zigbee Smart Plug Switch" {
+        Channels:
+            Type switch : state "Plug State" [ stateTopic="zigbee2mqtt/zb_smart_switch/state", commandTopic="zigbee2mqtt/zb_smart_switch/set", on="ON", off="OFF" ]
+    }
+}

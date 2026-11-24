@@ -1,0 +1,35 @@
+// Логічні групи для REST API Discovery
+Group gAllDevices      "All Gateway Devices"
+Group gMQTTDevices     "MQTT Protocol Devices"    (gAllDevices)
+Group gZigbeeDevices   "Zigbee Protocol Devices"  (gAllDevices)
+Group gClimate         "Climate Control"          (gAllDevices)
+Group gSecurity        "Security & Access"        (gAllDevices)
+Group gLighting        "Lighting Control"         (gAllDevices)
+
+// --- MQTT Items ---
+Number:Temperature MQTT_RoomTemp    "Room Temperature [%.1f °C]" <temperature> (gMQTTDevices, gClimate)   { channel="mqtt:topic:mosquitto:mqtt_climate_sensor:temperature" }
+Number:Dimensionless MQTT_RoomHum   "Room Humidity [%.0f %%]"    <humidity>    (gMQTTDevices, gClimate)   { channel="mqtt:topic:mosquitto:mqtt_climate_sensor:humidity" }
+String             MQTT_SensorAlive "Sensor Status [%s]"         <network>     (gMQTTDevices)             { channel="mqtt:topic:mosquitto:mqtt_climate_sensor:status" }
+
+Switch             MQTT_HallMotion  "Hallway Motion [%s]"        <motion>      (gMQTTDevices, gSecurity)  { channel="mqtt:topic:mosquitto:mqtt_motion_sensor:motion" }
+
+Switch             MQTT_PlugPower   "Heater Smart Plug [%s]"     <poweroutlet> (gMQTTDevices, gClimate)   { channel="mqtt:topic:mosquitto:mqtt_smart_plug:power_state" }
+Number:Power       MQTT_PlugWatts   "Plug Power [%.1f W]"        <energy>      (gMQTTDevices)             { channel="mqtt:topic:mosquitto:mqtt_smart_plug:wattage" }
+
+// --- Zigbee Items ---
+Switch             ZB_PermitJoin    "Zigbee Pairing Mode [%s]"   <settings>    (gZigbeeDevices)           { channel="mqtt:topic:mosquitto:zigbee_coordinator:permit_join" }
+String             ZB_MeshMap       "Zigbee Mesh Topology [%s]"  <network>     (gZigbeeDevices)           { channel="mqtt:topic:mosquitto:zigbee_coordinator:network_map" }
+
+Switch             ZB_BulbSwitch    "Living Room Light [%s]"     <light>       (gZigbeeDevices, gLighting){ channel="mqtt:topic:mosquitto:zb_bulb_livingroom:state" }
+Dimmer             ZB_BulbDimmer    "Light Brightness [%d %%]"   <slider>      (gZigbeeDevices, gLighting){ channel="mqtt:topic:mosquitto:zb_bulb_livingroom:brightness" }
+Number             ZB_BulbLQI       "Bulb LQI [%d]"              <qualityofservice> (gZigbeeDevices)      { channel="mqtt:topic:mosquitto:zb_bulb_livingroom:linkquality" }
+
+Contact            ZB_DoorContact   "Front Door [%s]"            <door>        (gZigbeeDevices, gSecurity){ channel="mqtt:topic:mosquitto:zb_contact_door:contact" }
+Number             ZB_DoorBattery   "Door Battery [%d %%]"       <battery>     (gZigbeeDevices)           { channel="mqtt:topic:mosquitto:zb_contact_door:battery" }
+Number             ZB_DoorLQI       "Door LQI [%d]"              <qualityofservice> (gZigbeeDevices)      { channel="mqtt:topic:mosquitto:zb_contact_door:linkquality" }
+
+Number:Temperature ZB_TRVSetpoint   "Radiator Target [%.1f °C]"  <heating>     (gZigbeeDevices, gClimate) { channel="mqtt:topic:mosquitto:zb_thermostat:target_temp" }
+String             ZB_TRVMode       "Radiator Mode [%s]"         <radiator>    (gZigbeeDevices, gClimate) { channel="mqtt:topic:mosquitto:zb_thermostat:valve_mode" }
+
+// Віртуальний перемикач режиму роботи шлюзу
+Switch             Gateway_AutoMode "Cross-Protocol Automation"  <switch>      (gAllDevices)

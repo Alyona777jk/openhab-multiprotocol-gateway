@@ -1,0 +1,5 @@
+openhab/userdata/*
+!openhab/userdata/.gitkeep
+mosquitto/data/*
+mosquitto/log/*
+*.log

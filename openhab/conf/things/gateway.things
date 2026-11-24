@@ -1,0 +1,54 @@
+// 1. MQTT Broker Bridge
+Bridge mqtt:broker:mosquitto [ host="mosquitto", port=1883, secure=false, clientID="openhab-gateway", qos=1, keepAlive=60 ] {
+    
+    // MQTT Device 1: Датчик температури та вологості (JSON payload)
+    Thing topic mqtt_climate_sensor "MQTT Climate Sensor" {
+        Channels:
+            Type number : temperature "Temperature" [ stateTopic="sensors/room1/climate", transformationPattern="JSONPATH:$.temp" ]
+            Type number : humidity    "Humidity"    [ stateTopic="sensors/room1/climate", transformationPattern="JSONPATH:$.hum" ]
+            Type string : status      "LWT Status"  [ stateTopic="sensors/room1/status" ]
+    }
+
+    // MQTT Device 2: Датчик руху (PIR)
+    Thing topic mqtt_motion_sensor "MQTT Motion Sensor" {
+        Channels:
+            Type switch : motion "Motion Detected" [ stateTopic="sensors/hallway/motion", on="DETECTED", off="CLEAR" ]
+    }
+
+    // MQTT Device 3: Розумна розетка з вимірюванням потужності
+    Thing topic mqtt_smart_plug "MQTT Smart Plug" {
+        Channels:
+            Type switch : power_state "Power Switch" [ stateTopic="actuators/plug1/state", commandTopic="actuators/plug1/set", on="ON", off="OFF" ]
+            Type number : wattage     "Power Usage"  [ stateTopic="actuators/plug1/power", transformationPattern="JSONPATH:$.watts" ]
+    }
+
+    // 2. Zigbee Coordinator Bridge (Емуляція Zigbee-мережі через Coordinator API)
+    Thing topic zigbee_coordinator "Zigbee Coordinator (CC2652P)" {
+        Channels:
+            Type switch : permit_join  "Permit Join"     [ stateTopic="zigbee2mqtt/bridge/response/permit_join", commandTopic="zigbee2mqtt/bridge/request/permit_join", transformationPattern="JSONPATH:$.data.value", formatBeforePublish="{\"value\": %s, \"time\": 60}" ]
+            Type string : network_map  "Mesh Topology"   [ stateTopic="zigbee2mqtt/bridge/networkmap" ]
+    }
+
+    // Zigbee Device 1: Розумна лампа (Dimmer + State)
+    Thing topic zb_bulb_livingroom "Zigbee Smart Bulb" {
+        Channels:
+            Type switch : state      "Light State" [ stateTopic="zigbee2mqtt/zb_bulb_01", commandTopic="zigbee2mqtt/zb_bulb_01/set", transformationPattern="JSONPATH:$.state", formatBeforePublish="{\"state\":\"%s\"}" ]
+            Type dimmer : brightness "Brightness"  [ stateTopic="zigbee2mqtt/zb_bulb_01", commandTopic="zigbee2mqtt/zb_bulb_01/set", transformationPattern="JSONPATH:$.brightness", formatBeforePublish="{\"brightness\":%s}" ]
+            Type number : linkquality "LQI Signal" [ stateTopic="zigbee2mqtt/zb_bulb_01", transformationPattern="JSONPATH:$.linkquality" ]
+    }
+
+    // Zigbee Device 2: Датчик відкриття дверей/вікон
+    Thing topic zb_contact_door "Zigbee Door Sensor" {
+        Channels:
+            Type contact : contact     "Door State" [ stateTopic="zigbee2mqtt/zb_door_01", transformationPattern="JSONPATH:$.contact", on="false", off="true" ]
+            Type number  : battery     "Battery"    [ stateTopic="zigbee2mqtt/zb_door_01", transformationPattern="JSONPATH:$.battery" ]
+            Type number  : linkquality "LQI Signal" [ stateTopic="zigbee2mqtt/zb_door_01", transformationPattern="JSONPATH:$.linkquality" ]
+    }
+
+    // Zigbee Device 3: Термостатичний клапан радіатора (TRV)
+    Thing topic zb_thermostat "Zigbee Radiator Valve" {
+        Channels:
+            Type number : target_temp "Target Temp" [ stateTopic="zigbee2mqtt/zb_trv_01", commandTopic="zigbee2mqtt/zb_trv_01/set", transformationPattern="JSONPATH:$.occupied_heating_setpoint", formatBeforePublish="{\"occupied_heating_setpoint\":%s}" ]
+            Type string : valve_mode  "System Mode" [ stateTopic="zigbee2mqtt/zb_trv_01", commandTopic="zigbee2mqtt/zb_trv_01/set", transformationPattern="JSONPATH:$.system_mode", formatBeforePublish="{\"system_mode\":\"%s\"}" ]
+    }
+}
